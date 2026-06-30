@@ -1,123 +1,131 @@
-ALUNOS: Pedro Henrique Rodrigues Alves e Felipe da Silva Oliveira
+Configuração do UERANSIM e Open5GS
 
+Alunos: Pedro Henrique Rodrigues Alves e Felipe da Silva Oliveira
 
--Subir UERANSIM:
+Arquitetura
 
-DEPENDÊNCIAS:
+-   VM1: UERANSIM (gNB + UE)
+-   VM2: Open5GS (Core 5G + UPF)
 
-sudo apt update
-sudo apt upgrade
-sudo apt install make
-sudo apt install gcc
-sudo apt install g++
-sudo apt install libsctp-dev lksctp-tools
-sudo apt install iproute2
-sudo snap install cmake --classic
+1. Instalação do UERANSIM (VM1)
 
+Dependências
 
-INSTALAÇÃO:
-git clone https://github.com/aligungr/UERANSIM.git
-cd ~/UERANSIM
-make
+    sudo apt update
+    sudo apt upgrade
 
+    sudo apt install make
+    sudo apt install gcc
+    sudo apt install g++
+    sudo apt install libsctp-dev lksctp-tools
+    sudo apt install iproute2
 
-CONFIGURAÇÃO DO ARQUIVO DA GNB:
-vim ~/UERANSIM/config/open5gs-gnb.yaml
+    sudo snap install cmake --classic
 
-# MODIFICAR APENAS ESSES CAMPOS:
+Instalação
 
-mcc: '999'     # Coloca '001' 
-mnc: '70'     # Coloca '01' 
+    git clone https://github.com/aligungr/UERANSIM.git
+    cd ~/UERANSIM
+    make
 
-linkIp: 127.0.0.1     # Deixa igual porque a UE e a GNB estão na mesma máquina 
-ngapIp: 127.0.0.1     # Coloca o IP dessa máquina (VM1)
-gtpIp: 127.0.0.1     # Coloca o IP dessa máquina (VM1)
+2. Configuração da gNB
 
-amfConfigs:
-  - address: 127.0.0.5     # Coloca o IP da máquina onde está o Open5gs (VM2)
+Edite:
 
+    vim ~/UERANSIM/config/open5gs-gnb.yaml
 
-CONFIGURAÇÃO DO ARQUIVO DA UE:
-vim ~/UERANSIM/config/open5gs-ue.yaml
+Altere:
 
-# MODIFICAR APENAS ESSES CAMPOS:
+    mcc: '001'
+    mnc: '01'
 
-supi: 'imsi-999700000000001'     # Coloca 'imsi-001010000000001' 
-mcc: '999'     # Coloca '001 ' 
-mnc: '70'     # Coloca '01 ' 
+    linkIp: <IP_VM1>
+    ngapIp: <IP_VM1>
+    gtpIp: <IP_VM1>
 
-gnbSearchList:
-  - 127.0.0.1     # Deixa igual porque a UE e a GNB estão na mesma máquina
+    amfConfigs:
+      - address: <IP_VM2>
 
+3. Configuração da UE
 
--Subir o OPEN5GS:
+Edite:
 
-INSTALAÇÃO
-git clone https://github.com/herlesupreeth/docker_open5gs.git
-cd ~/docker_open5gs.git
+    vim ~/UERANSIM/config/open5gs-ue.yaml
 
-# FAZ O PULL DAS IMAGENS DOCKER
-docker pull ghcr.io/herlesupreeth/docker_open5gs:master
-docker tag ghcr.io/herlesupreeth/docker_open5gs:master docker_open5gs
+Altere:
 
-docker pull ghcr.io/herlesupreeth/docker_grafana:master
-docker tag ghcr.io/herlesupreeth/docker_grafana:master docker_grafana
+    supi: 'imsi-001010000000001'
+    mcc: '001'
+    mnc: '01'
 
-docker pull ghcr.io/herlesupreeth/docker_metrics:master
-docker tag ghcr.io/herlesupreeth/docker_metrics:master docker_metrics
+    gnbSearchList:
+      - <IP_VM1>
 
+4. Instalação do Open5GS (VM2)
 
-CONFIGURAÇÃO DO .ENV:
-vim ~/docker_open5gs.git/.env
+    git clone https://github.com/herlesupreeth/docker_open5gs.git
+    cd ~/docker_open5gs
 
-DOCKER_HOST_IP=192.168.1.223     # Coloca o IP dessa máquina (VM2)
-UPF_ADVERTISE_IP=172.22.0.8     # Coloca o IP dessa máquina (VM2)
-UE_IPV4_INTERNET=192.168.100.0/24     # Coloca 10.45.0.0/16
-UE_IPV4_IMS=192.168.101.0/24     # Coloca 10.46.0.0/16
+Baixar imagens
 
+    docker pull ghcr.io/herlesupreeth/docker_open5gs:master
+    docker tag ghcr.io/herlesupreeth/docker_open5gs:master docker_open5gs
 
-CONFIGURAÇÃO DO ARQUIVO DE EXECUÇÃO:
-vim ~/docker_open5gs.git/sa-deploy.yaml
+    docker pull ghcr.io/herlesupreeth/docker_grafana:master
+    docker tag ghcr.io/herlesupreeth/docker_grafana:master docker_grafana
 
-# DESCOMENTA ESSE TRECHO DO AMF
-...
-    # ports:
-    #   - "38412:38412/sctp"
-…
+    docker pull ghcr.io/herlesupreeth/docker_metrics:master
+    docker tag ghcr.io/herlesupreeth/docker_metrics:master docker_metrics
 
+5. Configurar .env
 
-# DESCOMENTA ESSE TRECHO DA UPF
-...
-    # ports:
-    #   - "2152:2152/udp"
-...
+    vim ~/docker_open5gs/.env
 
+    DOCKER_HOST_IP=<IP_VM2>
+    UPF_ADVERTISE_IP=<IP_VM2>
+    UE_IPV4_INTERNET=10.45.0.0/16
+    UE_IPV4_IMS=10.46.0.0/16
 
-EXECUÇÃO:
-# PARA SUBIR O CORE 5G E A UPF
-docker compose -f sa-deploy.yaml up -d
+6. Configurar sa-deploy.yaml
 
-# PARA DESATIVAR (QUANDO FOR DESLIGAR A MÁQUINA OU EDITAR ALGO)
-docker compose -f sa-deploy.yaml down
+Descomente:
 
+AMF
 
-	Adicionando a UE na WEB UI do Open5gs:
-# ACESSA PELO NAVEGADOR (SÓ VAI PRECISAR FAZER ISSO DA PRIMEIRA VEZ)
+    ports:
+      - "38412:38412/sctp"
 
-<IP-DA-VM2>:9999
+UPF
 
-Username : admin
-Password : 1423
+    ports:
+      - "2152:2152/udp"
 
-# VAI EM “ADD A SUBSCRIBER”
-IMSI*: 001010000000001     # SALVA E PODE SAIR
+7. Executar Open5GS
 
-	
-Na máquina do UERANSIM, executa os dois arquivos abaixo pra subir a GNB e a UE:
-cd ~/UERANSIM/build
+    docker compose -f sa-deploy.yaml up -d
 
-./nr-gnb -c ../config/open5gs-gnb.yaml
-sudo ./nr-ue -c ../config/open5gs-ue.yaml
+Parar:
 
+    docker compose -f sa-deploy.yaml down
 
+8. Adicionar Subscriber
 
+Acesse:
+
+http://:9999
+
+Usuário: admin
+
+Senha: 1423
+
+IMSI:
+
+001010000000001
+
+9. Executar UERANSIM
+
+    cd ~/UERANSIM/build
+
+    ./nr-gnb -c ../config/open5gs-gnb.yaml
+
+    sudo ./nr-ue -c ../config/open5gs-ue.yaml
