@@ -1,4 +1,3 @@
-***Bypass com eBPF e XDP em uma Rede 5G***
 ALUNOS: Pedro Henrique Rodrigues Alves e Felipe da Silva Oliveira
 
 
