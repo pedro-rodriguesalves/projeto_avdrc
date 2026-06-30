@@ -5,7 +5,9 @@ Alunos: Pedro Henrique Rodrigues Alves e Felipe da Silva Oliveira
 Arquitetura
 
 -   VM1: UERANSIM (gNB + UE)
--   VM2: Open5GS (Core 5G + UPF)
+-   VM2: Open5GS (Core 5G)
+-   VM3: Open5GS (UPF)
+
 
 1. Instalação do UERANSIM (VM1)
 
