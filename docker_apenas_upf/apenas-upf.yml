@@ -1,0 +1,45 @@
+services:
+  upf:
+    image: docker_open5gs
+
+    container_name: upf
+
+    env_file:
+      - .env
+
+    environment:
+      - COMPONENT_NAME=upf
+
+    volumes:
+      - ./upf:/mnt/upf
+      - ./log:/open5gs/install/var/log/open5gs
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+    ports:
+      - "2152:2152/udp"
+      - "8805:8805/udp"
+
+    expose:
+      - "9091/tcp"
+
+    cap_add:
+      - NET_ADMIN
+
+    privileged: true
+
+    sysctls:
+      - net.ipv4.ip_forward=1
+
+    networks:
+      default:
+        ipv4_address: ${UPF_IP}
+
+networks:
+  default:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/24
+
+
